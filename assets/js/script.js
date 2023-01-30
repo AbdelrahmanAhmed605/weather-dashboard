@@ -5,7 +5,6 @@ function userFormSubmit(event) {
   event.preventDefault();
 
   var userCityName = userCitySelect.val();
-  console.log(userCityName);
   if (userCityName) {
     getCityCoordinates(userCityName);
     userCitySelect.val("");
@@ -18,15 +17,15 @@ function getCityCoordinates(cityName) {
   var geocodeUrl = `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=6cb822b337f6a4741cec5e8cacad4726`;
   fetch(geocodeUrl)
     .then(function (response) {
-      if (response.ok) {
+        if (response.ok) {
         response.json().then(function (data) {
-          var lat_coord = data[0].lat;
-          var long_coord = data[0].lon;
-          getCityWeather(lat_coord, long_coord);
+            var lat_coord = data[0].lat;
+            var long_coord = data[0].lon;
+            getCityWeather(lat_coord, long_coord);
         });
-      } else {
+        } else {
         alert("Error: " + response.statusText);
-      }
+        }
     })
     .catch(function (error) {
       alert("Unable to get city geodata currently! Please try again later");
@@ -84,7 +83,6 @@ function getDailyAverages(dailyData) {
         weather: dailyData[day].weather.reduce((a,b) => a),
       };
     });
-    console.log(dailyAverages)
     displayForecast(dailyAverages)
 }
 
@@ -94,7 +92,7 @@ function displayCurrentWeather(weatherData) {
     }
     var userSearchEl = $(".user-search");
     var currentWeatherCard = `
-    <div class="mainbar col-md-10">
+    <div class="mainbar col-md-9">
         <div class="card">
             <div class="current-weather card-body">
                 <h2 class="card-title"></h2>
@@ -121,7 +119,7 @@ function displayCurrentWeather(weatherData) {
 
 
     userSearchEl.removeClass("col-12");
-    userSearchEl.addClass("col-md-2");
+    userSearchEl.addClass("col-md-3");
     userSearchEl.after(currentWeatherCard);
 
     var currentWeatherEl = $(".current-weather");
@@ -145,7 +143,7 @@ function displayForecast(averageData) {
         </div>
 
         <div class="card-body">
-            <div class="user-city-forecast row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4">
+            <div class="user-city-forecast row row-cols-1 row-cols-md-3 row-cols-lg-5 g-3">
             </div>
         </div>
     </div>`;
@@ -192,16 +190,19 @@ function storeUserCity(userCity) {
     }
     
     if (storedCities.includes(userCity)) {
-        return
+        let index = storedCities.indexOf(userCity);
+        let repeatedCity = storedCities.splice(index, 1);
+        storedCities.unshift(repeatedCity[0]);
+        console.log(storedCities);
     }
-
-    storedCities.push(userCity);
-    if (storedCities.length > 8) {
-        recentCities.children().first().remove();
-        storedCities.shift();
+    else {
+        storedCities.unshift(userCity);
+        if (storedCities.length > 8) {
+            recentCities.children().last().remove();
+            storedCities.pop();
+        }
     }
     localStorage.setItem("user_cities", JSON.stringify(storedCities));
-
     displayStoredCity();
     
 }
