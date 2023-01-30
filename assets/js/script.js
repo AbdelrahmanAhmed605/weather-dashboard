@@ -215,10 +215,16 @@ function displayStoredCity() {
 
     recentCities.empty();
     displayCities.forEach((city) => {
-      var userCityEl = `<li class="list-group-item">${city}</li>`;
+      var userCityEl = `<li class="user-recent-city list-group-item list-group-item-action">${city}</li>`;
       recentCities.append(userCityEl);
     });
 }
 
-$(document).ready(displayCity);
+$(document).ready(displayStoredCity);
 userCityForm.submit(userFormSubmit);
+var recentCities = $(".user-recent-cities");
+
+recentCities.on("click", ".user-recent-city", function (event) {
+    var selectedCity = $(event.target).text();
+    getCityCoordinates(selectedCity)
+});
