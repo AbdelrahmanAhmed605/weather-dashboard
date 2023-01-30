@@ -41,6 +41,7 @@ function getCityWeather(latitude, longitude) {
         response.json().then(function (data) {
             displayCurrentWeather(data);
             getDailyWeather(data);
+            storeUserCity(data.city.name);
         });
       } else {
         alert("Error: " + response.statusText);
@@ -88,9 +89,12 @@ function getDailyAverages(dailyData) {
 }
 
 function displayCurrentWeather(weatherData) {
-  var userSearchEl = $(".user-search");
-  var currentWeatherCard = `
-    <div class="col-md-9">
+    if ($(".mainbar").length) {
+      $(".mainbar").remove();
+    }
+    var userSearchEl = $(".user-search");
+    var currentWeatherCard = `
+    <div class="mainbar col-md-10">
         <div class="card">
             <div class="current-weather card-body">
                 <h2 class="card-title"></h2>
@@ -104,32 +108,32 @@ function displayCurrentWeather(weatherData) {
     </div>`;
 
     var weatherIcon = {
-      Thunderstorm: `&#9928;`,
-      Drizzle: `&#127783;`,
-      Rain: `&#127783;`,
-      Snow: `&#10052`,
-      Atmosphere: `&#127787;`,
-      Clear: `&#9728;`,
-      Clouds: `&#9729;`,
-      Extreme: `&#9888;`,
-      Additional: `&#127786;`,
+        Thunderstorm: `&#9928;`,
+        Drizzle: `&#127783;`,
+        Rain: `&#127783;`,
+        Snow: `&#10052`,
+        Atmosphere: `&#127787;`,
+        Clear: `&#9728;`,
+        Clouds: `&#9729;`,
+        Extreme: `&#9888;`,
+        Additional: `&#127786;`,
     };
 
 
-  userSearchEl.removeClass("col-12");
-  userSearchEl.addClass("col-md-3");
-  userSearchEl.after(currentWeatherCard);
+    userSearchEl.removeClass("col-12");
+    userSearchEl.addClass("col-md-2");
+    userSearchEl.after(currentWeatherCard);
 
-  var currentWeatherEl = $(".current-weather");
-  var currentCityTitle = currentWeatherEl.children("h2");
-  var currentTemp = currentWeatherEl.children(".list-group").children("li").children("#user-city-temp");
-  var currentWind = currentWeatherEl.children(".list-group").children("li").children("#user-city-wind");
-  var currentHumidity = currentWeatherEl.children(".list-group").children("li").children("#user-city-humidity");
+    var currentWeatherEl = $(".current-weather");
+    var currentCityTitle = currentWeatherEl.children("h2");
+    var currentTemp = currentWeatherEl.children(".list-group").children("li").children("#user-city-temp");
+    var currentWind = currentWeatherEl.children(".list-group").children("li").children("#user-city-wind");
+    var currentHumidity = currentWeatherEl.children(".list-group").children("li").children("#user-city-humidity");
 
-  currentCityTitle.html(weatherData.city.name + ` (${weatherData.list[0].dt_txt.split(" ")[0]}) ` + weatherIcon[weatherData.list[0].weather[0].main]);
-  currentTemp.html(weatherData.list[0].main.temp + " &deg;C");
-  currentWind.text(weatherData.list[0].wind.speed + " m/s");
-  currentHumidity.text(weatherData.list[0].main.humidity + "%");
+    currentCityTitle.html(weatherData.city.name + ` (${weatherData.list[0].dt_txt.split(" ")[0]}) ` + weatherIcon[weatherData.list[0].weather[0].main]);
+    currentTemp.html(weatherData.list[0].main.temp + " &deg;C");
+    currentWind.text(weatherData.list[0].wind.speed + " m/s");
+    currentHumidity.text(weatherData.list[0].main.humidity + "%");
 }
 
 function displayForecast(averageData) {
@@ -180,4 +184,41 @@ function displayForecast(averageData) {
     });
 }
 
+function storeUserCity(userCity) {
+    var recentCities = $(".user-recent-cities");
+    var storedCities = JSON.parse(localStorage.getItem("user_cities"));
+    if (storedCities == null) {
+        storedCities = []
+    }
+    
+    if (storedCities.includes(userCity)) {
+        return
+    }
+
+    storedCities.push(userCity);
+    if (storedCities.length > 8) {
+        recentCities.children().first().remove();
+        storedCities.shift();
+    }
+    localStorage.setItem("user_cities", JSON.stringify(storedCities));
+
+    displayStoredCity();
+    
+}
+
+function displayStoredCity() {
+    var recentCities = $(".user-recent-cities");
+    var displayCities = JSON.parse(localStorage.getItem("user_cities"));
+    if (displayCities == null) {
+      displayCities = [];
+    }
+
+    recentCities.empty();
+    displayCities.forEach((city) => {
+      var userCityEl = `<li class="list-group-item">${city}</li>`;
+      recentCities.append(userCityEl);
+    });
+}
+
+$(document).ready(displayCity);
 userCityForm.submit(userFormSubmit);
