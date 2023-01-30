@@ -167,7 +167,7 @@ function displayForecast(averageData) {
             return;
         }
         var card = `
-        <div class="col">
+        <div class="col d-flex">
             <div class="card bg-secondary text-light">
                 <div class="card-header"><h4 class="card-title">${day}</h4></div>
                 <div class="card-body">
@@ -216,7 +216,7 @@ function displayStoredCity() {
 
     recentCities.empty();
     displayCities.forEach((city) => {
-      var userCityEl = `<li class="user-recent-city list-group-item list-group-item-action">${city}</li>`;
+      var userCityEl = `<li class="user-recent-city list-group-item">${city}</li>`;
       recentCities.append(userCityEl);
     });
 }

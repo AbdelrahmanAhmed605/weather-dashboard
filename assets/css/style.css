@@ -1,0 +1,47 @@
+:root{
+    --bg-grey: #6c757d;
+    --bg-blue: #081c5e;
+    --text-white: #eaedef;
+}
+
+.title-section{
+    margin: 0 0.1em;
+}
+
+.page-title{
+    background-image: linear-gradient(to right,#6c757d,#081c5e);
+    background-image: -o-linear-gradient(to right,#6c757d,#081c5e);
+    background-image: -webkit-linear-gradient(to right,#6c757d,#081c5e);
+    background-image: -moz-linear-gradient(to right,#6c757d,#081c5e);
+    color: var(--text-white);
+}
+
+label[for="user-city"]{
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+#user-city-submit{
+    background-color: var(--bg-blue);
+    width: 100%;
+}
+
+.user-recent-cities li{
+    border: none;
+    background-color: var(--bg-grey);
+    color: var(--text-white);
+    margin-bottom: 1em;
+}
+
+.user-recent-cities li:hover{
+    background-color: var(--bg-blue);
+}
+
+.current-weather .list-group-item{
+    border: none;
+}
+
+.user-city-forecast .card .card-body{
+    padding-left: 0.5em;
+    font-size: 1.2em;
+}
