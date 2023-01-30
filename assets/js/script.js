@@ -39,7 +39,8 @@ function getCityWeather(latitude, longitude) {
     .then(function (response) {
       if (response.ok) {
         response.json().then(function (data) {
-          getDailyWeather(data);
+            displayCurrentWeather(data);
+            getDailyWeather(data);
         });
       } else {
         alert("Error: " + response.statusText);
@@ -51,19 +52,22 @@ function getCityWeather(latitude, longitude) {
 }
 
 function getDailyWeather(weatherData) {
+    console.log(weatherData)
     const dailyData = {};
     weatherData.list.forEach((dataPoint) => {
-    const date = dataPoint.dt_txt.split(" ")[0];
-    if (!dailyData[date]) {
-        dailyData[date] = {
-        temperature: [],
-        humidity: [],
-        windSpeed: [],
-        };
-    }
-    dailyData[date].temperature.push(dataPoint.main.temp);
-    dailyData[date].humidity.push(dataPoint.main.humidity);
-    dailyData[date].windSpeed.push(dataPoint.wind.speed);
+        const date = dataPoint.dt_txt.split(" ")[0];
+        if (!dailyData[date]) {
+            dailyData[date] = {
+                temperature: [],
+                windSpeed: [],
+                humidity: [],
+                weather: [],
+            };
+        }
+        dailyData[date].temperature.push(dataPoint.main.temp);
+        dailyData[date].windSpeed.push(dataPoint.wind.speed);
+        dailyData[date].humidity.push(dataPoint.main.humidity);
+        dailyData[date].weather.push(dataPoint.weather[0].main);
     });
 
     getDailyAverages(dailyData);
@@ -73,12 +77,107 @@ function getDailyAverages(dailyData) {
     const dailyAverages = {};
     Object.keys(dailyData).forEach((day) => {
       dailyAverages[day] = {
-        temperature: Math.round(dailyData[day].temperature.reduce((a, b) => a + b) / dailyData[day].temperature.length),
+        temperature: Math.round(dailyData[day].temperature.reduce((a, b) => a + b) / dailyData[day].temperature.length *100)/100,
+        windSpeed: Math.round(dailyData[day].windSpeed.reduce((a, b) => a + b) / dailyData[day].windSpeed.length *100)/100,
         humidity: Math.round(dailyData[day].humidity.reduce((a, b) => a + b) / dailyData[day].humidity.length),
-        windSpeed: Math.round(dailyData[day].windSpeed.reduce((a, b) => a + b) / dailyData[day].windSpeed.length),
+        weather: dailyData[day].weather.reduce((a,b) => a),
       };
     });
     console.log(dailyAverages)
+    displayForecast(dailyAverages)
+}
+
+function displayCurrentWeather(weatherData) {
+  var userSearchEl = $(".user-search");
+  var currentWeatherCard = `
+    <div class="col-md-9">
+        <div class="card">
+            <div class="current-weather card-body">
+                <h2 class="card-title"></h2>
+                <ul class="list-group">
+                    <li class="list-group-item px-0">Temp: <span id="user-city-temp"></span></li>
+                    <li class="list-group-item px-0">Wind: <span id="user-city-wind"></span></li>
+                    <li class="list-group-item px-0">Humidity: <span id="user-city-humidity"></span></li>
+                </ul>   
+            </div>
+        </div>
+    </div>`;
+
+    var weatherIcon = {
+      Thunderstorm: `&#9928;`,
+      Drizzle: `&#127783;`,
+      Rain: `&#127783;`,
+      Snow: `&#10052`,
+      Atmosphere: `&#127787;`,
+      Clear: `&#9728;`,
+      Clouds: `&#9729;`,
+      Extreme: `&#9888;`,
+      Additional: `&#127786;`,
+    };
+
+
+  userSearchEl.removeClass("col-12");
+  userSearchEl.addClass("col-md-3");
+  userSearchEl.after(currentWeatherCard);
+
+  var currentWeatherEl = $(".current-weather");
+  var currentCityTitle = currentWeatherEl.children("h2");
+  var currentTemp = currentWeatherEl.children(".list-group").children("li").children("#user-city-temp");
+  var currentWind = currentWeatherEl.children(".list-group").children("li").children("#user-city-wind");
+  var currentHumidity = currentWeatherEl.children(".list-group").children("li").children("#user-city-humidity");
+
+  currentCityTitle.html(weatherData.city.name + ` (${weatherData.list[0].dt_txt.split(" ")[0]}) ` + weatherIcon[weatherData.list[0].weather[0].main]);
+  currentTemp.html(weatherData.list[0].main.temp + " &deg;C");
+  currentWind.text(weatherData.list[0].wind.speed + " m/s");
+  currentHumidity.text(weatherData.list[0].main.humidity + "%");
+}
+
+function displayForecast(averageData) {
+    var currentWeatherCard = $(".current-weather").parent(".card");
+    var forecastElements = `
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3 class="card-title">5-day Forecast:</h3>
+        </div>
+
+        <div class="card-body">
+            <div class="user-city-forecast row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4">
+            </div>
+        </div>
+    </div>`;
+    currentWeatherCard.after(forecastElements);
+
+    var weatherIcon = {
+      Thunderstorm: `&#9928;`,
+      Drizzle: `&#127783;`,
+      Rain: `&#127783;`,
+      Snow: `&#10052`,
+      Atmosphere: `&#127787;`,
+      Clear: `&#9728;`,
+      Clouds: `&#9729;`,
+      Extreme: `&#9888;`,
+      Additional: `&#127786;`,
+    };
+
+    var forecastCards = $(".user-city-forecast");
+    Object.keys(averageData).forEach((day, index) => {
+        if (index == 0) {
+            return;
+        }
+        var card = `
+        <div class="col">
+            <div class="card bg-secondary text-light">
+                <div class="card-header"><h4 class="card-title">${day}</h4></div>
+                <div class="card-body">
+                    <p class="card-text">${weatherIcon[averageData[day].weather]}</p>
+                    <p class="card-text">Temp: ${averageData[day].temperature}&#176;C</p>
+                    <p class="card-text">Wind: ${averageData[day].windSpeed} m/s</p>
+                    <p class="card-text">Humidity: ${averageData[day].humidity}%</p>
+                </div>
+            </div>
+        </div>`;
+        forecastCards.append(card);
+    });
 }
 
 userCityForm.submit(userFormSubmit);
