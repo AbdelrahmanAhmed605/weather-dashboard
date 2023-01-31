@@ -1,6 +1,8 @@
 var userCityForm = $("#user-city-form");
 var userCitySelect = $("#user-city");
 
+/* Checks to see if the user has inputted text into the form, and runs the 
+getCityCoordinates function when an entry in the form is submitted */
 function userFormSubmit(event) {
   event.preventDefault();
 
@@ -13,6 +15,8 @@ function userFormSubmit(event) {
   }
 }
 
+/* Uses OpenWeather's GeoCode API call to turn the users inputted city name into
+latitude and longitude coordinates which are needed for the 5 day weather forecast API */
 function getCityCoordinates(cityName) {
   var geocodeUrl = `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=6cb822b337f6a4741cec5e8cacad4726`;
   fetch(geocodeUrl)
@@ -32,6 +36,10 @@ function getCityCoordinates(cityName) {
     });
 }
 
+/* Uses OpenWeather's 5 day weather forecast API to obtain the weather data for the requested
+latitude and longitude coordinates. The current weather is displayed and all the other data points
+are placed into the getDailyWeather function to get the overall average weather info for each day.
+The storeUserCity saves the users input into the local storage */
 function getCityWeather(latitude, longitude) {
   var weatherUrl = `http://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=6cb822b337f6a4741cec5e8cacad4726&units=metric`;
   fetch(weatherUrl)
@@ -51,6 +59,9 @@ function getCityWeather(latitude, longitude) {
     });
 }
 
+/* The 5 day weather forecast API returns data for every 3 hours of the 5 days (40 data points)
+A dictionary object is made where the keys are the dates for the data and the values are 
+arrays containing weather data for the respective dates */
 function getDailyWeather(weatherData) {
     const dailyData = {};
     weatherData.list.forEach((dataPoint) => {
@@ -72,6 +83,8 @@ function getDailyWeather(weatherData) {
     getDailyAverages(dailyData);
 }
 
+/* Creates a dictionary object where the keys are the dates for the data and the value is an
+average of all the data points for that respective day */
 function getDailyAverages(dailyData) {
     const dailyAverages = {};
     Object.keys(dailyData).forEach((day) => {
@@ -85,6 +98,8 @@ function getDailyAverages(dailyData) {
     displayForecast(dailyAverages)
 }
 
+/* Stores references to emojis which describe the city's weather. This variable is to be used
+in the displayCurrentWeather and displayForecast functions */
 var weatherIcon = {
   Thunderstorm: `&#9928;`,
   Drizzle: `&#127783;`,
@@ -97,6 +112,9 @@ var weatherIcon = {
   Additional: `&#127786;`,
 };
 
+/* Displays a card showing the current weather data on the screen. The card takes up
+9 columns from the screen and changes the intial search form from 12 columns to 3, so it can be placed
+as a sidebar. The function also replaces the entire card section when a new user input is submitted*/
 function displayCurrentWeather(weatherData) {
     if ($(".mainbar").length) {
       $(".mainbar").remove();
@@ -132,6 +150,7 @@ function displayCurrentWeather(weatherData) {
     currentHumidity.text(weatherData.list[0].main.humidity + "%");
 }
 
+/* Creates a bootstrap card grid with 5 cards for each day forecasted. */
 function displayForecast(averageData) {
     var currentWeatherCard = $(".current-weather").parent(".card");
     var forecastElements = `
@@ -150,7 +169,7 @@ function displayForecast(averageData) {
     var forecastCards = $(".user-city-forecast");
     Object.keys(averageData).forEach((day, index) => {
         if (index == 0) {
-            return;
+            return; //The average data also contains information for the current day, which we dont want to display
         }
         var card = `
         <div class="col">
@@ -168,6 +187,8 @@ function displayForecast(averageData) {
     });
 }
 
+/* Stores the users input into the local Storage and checks to see if the inputted city already exists
+in the recent searches section. Also orders the list to have the most recent search at the top of the list*/
 function storeUserCity(userCity) {
     var recentCities = $(".user-recent-cities");
     var storedCities = JSON.parse(localStorage.getItem("user_cities"));
@@ -193,6 +214,7 @@ function storeUserCity(userCity) {
     
 }
 
+/* Displays the user stored cities in the recent searches section on the sidebar */
 function displayStoredCity() {
     var recentCities = $(".user-recent-cities");
     var displayCities = JSON.parse(localStorage.getItem("user_cities"));
@@ -207,10 +229,13 @@ function displayStoredCity() {
     });
 }
 
+/* Shows the stored user inputted cities in the recent searches section when the document is loaded and the DOM is rendered */
 $(document).ready(displayStoredCity);
 userCityForm.submit(userFormSubmit);
-var recentCities = $(".user-recent-cities");
 
+/* Checks to see if the user clicks on the cities in the recent searches tab at any point in the running of the application.
+If the user selects on of the cities then it runs the getCityCoordinates function */
+var recentCities = $(".user-recent-cities");
 recentCities.on("click", ".user-recent-city", function (event) {
     var selectedCity = $(event.target).text();
     getCityCoordinates(selectedCity)
