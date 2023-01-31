@@ -8,6 +8,7 @@
     margin: 0 0.1em;
 }
 
+/*Add a linear gradient background to the titlebar at the top of the page*/
 .page-title{
     background-image: linear-gradient(to right,#6c757d,#081c5e);
     background-image: -o-linear-gradient(to right,#6c757d,#081c5e);
@@ -26,6 +27,7 @@ label[for="user-city"]{
     width: 100%;
 }
 
+/*Styles are placed onto the cities added to the sidebar under the recent searches tab*/
 .user-recent-cities li{
     border: none;
     background-color: var(--bg-grey);
@@ -33,8 +35,10 @@ label[for="user-city"]{
     margin-bottom: 1em;
 }
 
+/*Helps user identify which recent city they are hovering*/
 .user-recent-cities li:hover{
     background-color: var(--bg-blue);
+    cursor: pointer;
 }
 
 .current-weather .list-group-item{
