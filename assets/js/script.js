@@ -18,14 +18,15 @@ function userFormSubmit(event) {
 /* Uses OpenWeather's GeoCode API call to turn the users inputted city name into
 latitude and longitude coordinates which are needed for the 5 day weather forecast API */
 function getCityCoordinates(cityName) {
-  var geocodeUrl = `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=6cb822b337f6a4741cec5e8cacad4726`;
+  var geocodeUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=1&appid=6cb822b337f6a4741cec5e8cacad4726`;
   fetch(geocodeUrl)
     .then(function (response) {
         if (response.ok) {
             response.json().then(function (data) {
             var lat_coord = data[0].lat;
-            var long_coord = data[0].lon;
-            getCityWeather(lat_coord, long_coord);
+                var long_coord = data[0].lon;
+                getCurrentWeather(lat_coord, long_coord)
+                getForecastWeather(lat_coord, long_coord);
         });
         } else {
         alert("Error: " + response.statusText);
@@ -36,19 +37,38 @@ function getCityCoordinates(cityName) {
     });
 }
 
+function getCurrentWeather(latitude, longitude) {
+    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=6cb822b337f6a4741cec5e8cacad4726&units=metric`;
+    fetch(weatherUrl)
+      .then(function (response) {
+        if (response.ok) {
+            response.json().then(function (data) {
+                const currentTimestamp = data.dt * 1000;
+                const currentDate = new Date(currentTimestamp);
+                var formattedDate = currentDate.toISOString().substring(0, 10);
+                displayCurrentWeather(data, formattedDate);
+                storeUserCity(data.name);
+          });
+        } else {
+          alert("Error: " + response.statusText);
+        }
+      })
+      .catch(function (error) {
+        alert("Unable to get weather data currently! Please try again later");
+      });
+}
+
 /* Uses OpenWeather's 5 day weather forecast API to obtain the weather data for the requested
 latitude and longitude coordinates. The current weather is displayed and all the other data points
 are placed into the getDailyWeather function to get the overall average weather info for each day.
 The storeUserCity saves the users input into the local storage */
-function getCityWeather(latitude, longitude) {
-  var weatherUrl = `http://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=6cb822b337f6a4741cec5e8cacad4726&units=metric`;
+function getForecastWeather(latitude, longitude) {
+  const weatherUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=6cb822b337f6a4741cec5e8cacad4726&units=metric`;
   fetch(weatherUrl)
     .then(function (response) {
       if (response.ok) {
-          response.json().then(function (data) {
-            displayCurrentWeather(data);
+        response.json().then(function (data) {
             getDailyWeather(data);
-            storeUserCity(data.city.name);
         });
       } else {
         alert("Error: " + response.statusText);
@@ -91,22 +111,9 @@ function getDailyAverages(dailyData) {
   //computes average of elements in array (StackOverflow): https://stackoverflow.com/questions/10359907/how-to-compute-the-sum-and-average-of-elements-in-an-array
   Object.keys(dailyData).forEach((day) => {
     dailyAverages[day] = {
-      temperature:
-        Math.round(
-          (dailyData[day].temperature.reduce((a, b) => a + b) /
-            dailyData[day].temperature.length) *
-            100
-        ) / 100,
-      windSpeed:
-        Math.round(
-          (dailyData[day].windSpeed.reduce((a, b) => a + b) /
-            dailyData[day].windSpeed.length) *
-            100
-        ) / 100,
-      humidity: Math.round(
-        dailyData[day].humidity.reduce((a, b) => a + b) /
-          dailyData[day].humidity.length
-      ),
+      temperature:Math.round((dailyData[day].temperature.reduce((a, b) => a + b) /dailyData[day].temperature.length) *100) / 100,
+      windSpeed:Math.round((dailyData[day].windSpeed.reduce((a, b) => a + b) /dailyData[day].windSpeed.length) *100) / 100,
+      humidity: Math.round(dailyData[day].humidity.reduce((a, b) => a + b) /dailyData[day].humidity.length),
       weather: dailyData[day].weather.reduce((a, b) => a),
     };
   });
@@ -130,7 +137,8 @@ var weatherIcon = {
 /* Displays a card showing the current weather data on the screen. The card takes up
 9 columns from the screen and changes the intial search form from 12 columns to 3, so it can be placed
 as a sidebar. The function also replaces the entire card section when a new user input is submitted*/
-function displayCurrentWeather(weatherData) {
+function displayCurrentWeather(weatherData, date) {
+    console.log(weatherData)
     if ($(".mainbar").length) {
       $(".mainbar").remove();
     }
@@ -159,10 +167,10 @@ function displayCurrentWeather(weatherData) {
     var currentWind = currentWeatherEl.children(".list-group").children("li").children("#user-city-wind");
     var currentHumidity = currentWeatherEl.children(".list-group").children("li").children("#user-city-humidity");
 
-    currentCityTitle.html(weatherData.city.name + ` (${weatherData.list[0].dt_txt.split(" ")[0]}) ` + weatherIcon[weatherData.list[0].weather[0].main]);
-    currentTemp.html(weatherData.list[0].main.temp + " &deg;C");
-    currentWind.text(weatherData.list[0].wind.speed + " m/s");
-    currentHumidity.text(weatherData.list[0].main.humidity + "%");
+    currentCityTitle.html(weatherData.name + ` (${date}) ` + weatherIcon[weatherData.weather[0].main]);
+    currentTemp.html(weatherData.main.temp + " &deg;C");
+    currentWind.text(weatherData.wind.speed + " m/s");
+    currentHumidity.text(weatherData.main.humidity + "%");
 }
 
 /* Creates a bootstrap card grid with 5 cards for each day forecasted. */
@@ -183,9 +191,6 @@ function displayForecast(averageData) {
 
     var forecastCards = $(".user-city-forecast");
     Object.keys(averageData).forEach((day, index) => {
-        if (index == 0) {
-            return; //The average data also contains information for the current day, which we dont want to display
-        }
         var card = `
         <div class="col">
             <div class="card bg-secondary text-light">
@@ -215,7 +220,6 @@ function storeUserCity(userCity) {
         let index = storedCities.indexOf(userCity);
         let repeatedCity = storedCities.splice(index, 1);
         storedCities.unshift(repeatedCity[0]);
-        console.log(storedCities);
     }
     else {
         storedCities.unshift(userCity);
