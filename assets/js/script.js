@@ -86,16 +86,31 @@ function getDailyWeather(weatherData) {
 /* Creates a dictionary object where the keys are the dates for the data and the value is an
 average of all the data points for that respective day */
 function getDailyAverages(dailyData) {
-    const dailyAverages = {};
-    Object.keys(dailyData).forEach((day) => {
-      dailyAverages[day] = {
-        temperature: Math.round(dailyData[day].temperature.reduce((a, b) => a + b) / dailyData[day].temperature.length *100)/100,
-        windSpeed: Math.round(dailyData[day].windSpeed.reduce((a, b) => a + b) / dailyData[day].windSpeed.length *100)/100,
-        humidity: Math.round(dailyData[day].humidity.reduce((a, b) => a + b) / dailyData[day].humidity.length),
-        weather: dailyData[day].weather.reduce((a,b) => a),
-      };
-    });
-    displayForecast(dailyAverages)
+  const dailyAverages = {};
+
+  //computes average of elements in array (StackOverflow): https://stackoverflow.com/questions/10359907/how-to-compute-the-sum-and-average-of-elements-in-an-array
+  Object.keys(dailyData).forEach((day) => {
+    dailyAverages[day] = {
+      temperature:
+        Math.round(
+          (dailyData[day].temperature.reduce((a, b) => a + b) /
+            dailyData[day].temperature.length) *
+            100
+        ) / 100,
+      windSpeed:
+        Math.round(
+          (dailyData[day].windSpeed.reduce((a, b) => a + b) /
+            dailyData[day].windSpeed.length) *
+            100
+        ) / 100,
+      humidity: Math.round(
+        dailyData[day].humidity.reduce((a, b) => a + b) /
+          dailyData[day].humidity.length
+      ),
+      weather: dailyData[day].weather.reduce((a, b) => a),
+    };
+  });
+  displayForecast(dailyAverages);
 }
 
 /* Stores references to emojis which describe the city's weather. This variable is to be used
