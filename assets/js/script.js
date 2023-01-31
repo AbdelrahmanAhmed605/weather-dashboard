@@ -18,7 +18,7 @@ function getCityCoordinates(cityName) {
   fetch(geocodeUrl)
     .then(function (response) {
         if (response.ok) {
-        response.json().then(function (data) {
+            response.json().then(function (data) {
             var lat_coord = data[0].lat;
             var long_coord = data[0].lon;
             getCityWeather(lat_coord, long_coord);
@@ -37,7 +37,7 @@ function getCityWeather(latitude, longitude) {
   fetch(weatherUrl)
     .then(function (response) {
       if (response.ok) {
-        response.json().then(function (data) {
+          response.json().then(function (data) {
             displayCurrentWeather(data);
             getDailyWeather(data);
             storeUserCity(data.city.name);
@@ -52,7 +52,6 @@ function getCityWeather(latitude, longitude) {
 }
 
 function getDailyWeather(weatherData) {
-    console.log(weatherData)
     const dailyData = {};
     weatherData.list.forEach((dataPoint) => {
         const date = dataPoint.dt_txt.split(" ")[0];
@@ -86,6 +85,18 @@ function getDailyAverages(dailyData) {
     displayForecast(dailyAverages)
 }
 
+var weatherIcon = {
+  Thunderstorm: `&#9928;`,
+  Drizzle: `&#127783;`,
+  Rain: `&#127783;`,
+  Snow: `&#10052`,
+  Atmosphere: `&#127787;`,
+  Clear: `&#9728;`,
+  Clouds: `&#9729;`,
+  Extreme: `&#9888;`,
+  Additional: `&#127786;`,
+};
+
 function displayCurrentWeather(weatherData) {
     if ($(".mainbar").length) {
       $(".mainbar").remove();
@@ -104,19 +115,6 @@ function displayCurrentWeather(weatherData) {
             </div>
         </div>
     </div>`;
-
-    var weatherIcon = {
-        Thunderstorm: `&#9928;`,
-        Drizzle: `&#127783;`,
-        Rain: `&#127783;`,
-        Snow: `&#10052`,
-        Atmosphere: `&#127787;`,
-        Clear: `&#9728;`,
-        Clouds: `&#9729;`,
-        Extreme: `&#9888;`,
-        Additional: `&#127786;`,
-    };
-
 
     userSearchEl.removeClass("col-12");
     userSearchEl.addClass("col-md-3");
@@ -149,25 +147,13 @@ function displayForecast(averageData) {
     </div>`;
     currentWeatherCard.after(forecastElements);
 
-    var weatherIcon = {
-      Thunderstorm: `&#9928;`,
-      Drizzle: `&#127783;`,
-      Rain: `&#127783;`,
-      Snow: `&#10052`,
-      Atmosphere: `&#127787;`,
-      Clear: `&#9728;`,
-      Clouds: `&#9729;`,
-      Extreme: `&#9888;`,
-      Additional: `&#127786;`,
-    };
-
     var forecastCards = $(".user-city-forecast");
     Object.keys(averageData).forEach((day, index) => {
         if (index == 0) {
             return;
         }
         var card = `
-        <div class="col d-flex">
+        <div class="col">
             <div class="card bg-secondary text-light">
                 <div class="card-header"><h4 class="card-title">${day}</h4></div>
                 <div class="card-body">
