@@ -193,6 +193,10 @@ function displayForecast(averageData) {
 
     var forecastCards = $(".user-city-forecast");
     Object.keys(averageData).forEach((day, index) => {
+        if (index == 0)
+        {
+            return; //Skips the first set of data which represents data for the current day
+        }
         var card = `
             <div class="col">
                 <div class="card bg-secondary text-light">
