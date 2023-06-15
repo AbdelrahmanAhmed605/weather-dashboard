@@ -2,6 +2,8 @@
 
 ## Description
 
+![image](assets/imgs/weather-dashboard.png)
+
 Website containing a weather dashboard which displays weather data for multiple cities using third-party API calls to OpenWeather. The application contains a form input which accepts user inputs of city names. The city names are passed on to OpenWeathers Geocoding API to convert the city name into latitude and longitude coordinates. The coordinates are then used as query parameters to OpenWeather's 5 day weather forecast API call to get the weather forecast for the selected city. If there is an error due to incorrect data provided by the user or a problem with the API call, the application provides an alert to the user with the code for the specific error. The application also keeps track of the users most recent searches in the local storage, and allows the user to click on recent cities for quick access to their weather data. The webpage features dynamically updated HTML and CSS powered by JQuery and Bootstrap.
 
 During the project, Abdelrahman learnt the following skills:
